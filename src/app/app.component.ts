@@ -1,68 +1,74 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button'; // Import MatButtonModule
+import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
+import { ApiService, Flashcard } from './services/api.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MatCardModule, MatButtonModule], // Add MatButtonModule here
+  imports: [RouterOutlet, MatCardModule, MatButtonModule, CommonModule, HttpClientModule],
   standalone: true,
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
+  providers: [ApiService]
 })
 export class AppComponent {
   title = 'toroh';
   selectedFile: File | null = null;
-  flashcards: { question: string, answer: string }[] = []; // Basic flashcard structure
+  flashcards: Flashcard[] = [];
+  isLoading = false;
+
+  private apiService = inject(ApiService)
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
+
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      if (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+
+      if (allowedTypes.includes(file.type)) {
         this.selectedFile = file;
         console.log('Selected file:', this.selectedFile.name);
       } else {
         this.selectedFile = null;
-        alert('Please select a .pdf or .docx file.');
-        input.value = ''; // Reset the input
+        alert('Invalid file type. Please select a .pdf or .docx file.');
+        input.value = ''; // Reset the file input
       }
+    } else {
+      this.selectedFile = null; // No file selected or selection cancelled
     }
   }
 
   createFlashcards(): void {
     if (this.selectedFile) {
       console.log(`Preparing to create flashcards from: ${this.selectedFile.name}`);
-      // TODO: Implement file upload to backend and Gemini AI integration
-      // 1. Create a FormData object
-      // const formData = new FormData();
-      // formData.append('document', this.selectedFile, this.selectedFile.name);
+      this.isLoading = true;
+      
+      this.apiService.uploadDocumentAndGetFlashcards(this.selectedFile).subscribe({
+        next: (response: Flashcard[]) => {
+          this.flashcards = response;
+          console.log('Flashcards received:', this.flashcards);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error creating flashcards:', error);
+          alert('Failed to create flashcards. See console for details.');
+          this.isLoading = false;
+        }
+      });
 
-      // 2. Send formData to your backend service
-      // this.yourApiService.uploadDocumentAndGetFlashcards(formData).subscribe(
-      //   (response: { question: string, answer: string }[]) => {
-      //     this.flashcards = response;
-      //     console.log('Flashcards received:', this.flashcards);
-      //   },
-      //   error => {
-      //     console.error('Error creating flashcards:', error);
-      //     alert('Failed to create flashcards. See console for details.');
-      //   }
-      // );
-
-      // For now, let's simulate a response:
-      alert(`Simulating flashcard creation for ${this.selectedFile.name}. Check console for next steps.`);
-      this.flashcards = [
-        { question: 'What is the capital of France?', answer: 'Paris' },
-        { question: 'What is 2 + 2?', answer: '4' }
-      ];
-      this.selectedFile = null; // Clear selection after processing
-      // Reset the file input visually if you have a direct reference to it
+      // Reset the file input after sending
       const fileInput = document.getElementById('fileInput') as HTMLInputElement;
       if (fileInput) {
         fileInput.value = '';
       }
-
+      this.selectedFile = null;
     } else {
       alert('Please select a file first.');
     }
