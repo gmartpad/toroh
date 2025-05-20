@@ -11,21 +11,31 @@
         <p *ngIf="selectedFile" style="margin-top: 10px;">Selected file: {{ selectedFile?.name }}</p>
       </mat-card-content>
       <mat-card-actions>
-        <button mat-raised-button color="accent" (click)="createFlashcards()" [disabled]="!selectedFile">Create Flashcards</button>
+        <button mat-raised-button color="accent" (click)="createFlashcards()" [disabled]="!selectedFile || isLoading">
+          {{ isLoading ? 'Processing...' : 'Create Flashcards' }}
+        </button>
       </mat-card-actions>
     </mat-card>
 
-    <div *ngIf="flashcards.length > 0" class="flashcards-container">
-      <h2>Generated Flashcards:</h2>
-      <mat-card *ngFor="let card of flashcards" appearance="outlined" style="margin-bottom: 10px;">
-        <mat-card-header>
-          <mat-card-title>Q: {{ card.question }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p>A: {{ card.answer }}</p>
-        </mat-card-content>
-      </mat-card>
-    </div>
+    @if(isLoading) {
+      <div style="text-align: center; margin: 20px 0;">
+        <p>Generating flashcards, please wait...</p>
+      </div>
+    }
+
+    @if(flashcards.length > 0) {
+      <div class="flashcards-container">
+        <h2>Generated Flashcards:</h2>
+        <mat-card *ngFor="let card of flashcards" appearance="outlined" style="margin-bottom: 10px;">
+          <mat-card-header>
+            <mat-card-title>Q: {{ card.question }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>A: {{ card.answer }}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
   </div>
 </main>
 
