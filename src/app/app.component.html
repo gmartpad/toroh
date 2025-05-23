@@ -8,7 +8,9 @@
       <mat-card-content>
         <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".pdf,.docx" style="display: none;" #fileUploadInput>
         <button mat-raised-button color="primary" (click)="fileUploadInput.click()">Choose File</button>
-        <p *ngIf="selectedFile" style="margin-top: 10px;">Selected file: {{ selectedFile?.name }}</p>
+        @if(selectedFile) {
+          <p style="margin-top: 10px;">Selected file: {{ selectedFile.name }}</p>
+        }
       </mat-card-content>
       <mat-card-actions>
         <button mat-raised-button color="accent" (click)="createFlashcards()" [disabled]="!selectedFile || isLoading">
@@ -24,16 +26,34 @@
     }
 
     @if(flashcards.length > 0) {
+      <h2>Generated Flashcards:</h2>
       <div class="flashcards-container">
-        <h2>Generated Flashcards:</h2>
-        <mat-card *ngFor="let card of flashcards" appearance="outlined" style="margin-bottom: 10px;">
-          <mat-card-header>
-            <mat-card-title>Q: {{ card.question }}</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>A: {{ card.answer }}</p>
-          </mat-card-content>
-        </mat-card>
+        @for(card of flashcards; track card.question) {
+          <div class="flashcard-wrapper" (click)="toggleFlip(card.question)">
+            <div class="flashcard" [@flipState]="cardFlipStates[card.question]">
+              <div class="flashcard-front">
+                <mat-card appearance="outlined">
+                  <mat-card-header>
+                    <mat-card-title>Q:</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p>{{ card.question }}</p>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+              <div class="flashcard-back">
+                <mat-card appearance="outlined">
+                  <mat-card-header>
+                    <mat-card-title>A:</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p>{{ card.answer }}</p>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     }
   </div>
