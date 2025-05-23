@@ -1,0 +1,59 @@
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+.flashcard-wrapper {
+  perspective: 1000px;
+  cursor: pointer;
+  max-width: 500px;
+  width: 100%;
+  min-height: 300px;
+}
+
+.flashcard {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+  max-width: 500px;
+  min-height: 300px;
+}
+
+.flashcard-front, .flashcard-back {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.flashcard-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* Make sure the mat-card takes full width */
+.flashcard-front mat-card, .flashcard-back mat-card {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 500px;
+  min-height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Add some spacing for the flashcards container */
+.flashcards-container {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
